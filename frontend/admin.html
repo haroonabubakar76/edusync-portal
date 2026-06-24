@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Super Admin</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="top-nav">
+  <div class="nav-logo">Edu<span>Sync</span></div>
+  <div class="nav-right">
+    <div class="sync-dot" id="syncDot"></div>
+    <div class="nav-user" id="navUser">Admin</div>
+    <button class="nav-logout" onclick="logout()">⎋</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>Super Admin Panel</h1>
+  <p>Manage all schools, subscriptions and accounts</p>
+</div>
+
+<div class="page-content">
+
+  <!-- Stats -->
+  <div class="stat-row" style="margin:0 0 16px;">
+    <div class="stat-chip"><div class="val" id="statTotal">—</div><div class="lbl">Schools</div></div>
+    <div class="stat-chip"><div class="val" id="statActive">—</div><div class="lbl">Active</div></div>
+    <div class="stat-chip"><div class="val" id="statSuspended">—</div><div class="lbl">Suspended</div></div>
+    <div class="stat-chip"><div class="val" id="statGrace">—</div><div class="lbl">Grace</div></div>
+  </div>
+
+  <!-- Create School -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-label" style="margin-bottom:12px;">Add New School</div>
+
+    <div class="banner banner-error" id="errBanner"><span>⚠️</span><span id="errText"></span></div>
+    <div class="banner banner-success" id="okBanner" style="display:none;"><span>✅</span><span id="okText"></span></div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="field">
+        <label>School ID</label>
+        <div class="input-wrap">
+          <span class="icon">🏷️</span>
+          <input type="text" id="schoolId" placeholder="SCH002" style="padding-left:40px;">
+        </div>
+      </div>
+      <div class="field">
+        <label>School Name</label>
+        <div class="input-wrap">
+          <span class="icon">🏫</span>
+          <input type="text" id="schoolName" placeholder="School full name" style="padding-left:40px;">
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Address</label>
+      <div class="input-wrap">
+        <span class="icon">📍</span>
+        <input type="text" id="schoolAddr" placeholder="School address" style="padding-left:40px;">
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="field">
+        <label>Phone</label>
+        <div class="input-wrap">
+          <span class="icon">📱</span>
+          <input type="text" id="schoolPhone" placeholder="08012345678" style="padding-left:40px;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <div class="input-wrap">
+          <span class="icon">✉️</span>
+          <input type="email" id="schoolEmail" placeholder="school@ng" style="padding-left:40px;">
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="createBtn" onclick="createSchool()">+ Create School</button>
+  </div>
+
+  <!-- Schools List -->
+  <div class="section-label">All Schools</div>
+  <div id="schoolsList">
+    <div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div>
+  </div>
+
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+const user = Auth.user();
+if (!user || user.role !== 'super_admin') { window.location.href = 'index.html'; }
+document.getElementById('navUser').textContent = user.name.split(' ')[0];
+
+function updateOnline() {
+  document.getElementById('syncDot').classList.toggle('offline', !navigator.onLine);
+}
+window.addEventListener('online', updateOnline);
+window.addEventListener('offline', updateOnline);
+updateOnline();
+
+async function loadSchools() {
+  const res = await API.get('/schools/');
+  if (!res.ok) return;
+  const schools = res.data;
+
+  document.getElementById('statTotal').textContent = schools.length;
+  document.getElementById('statActive').textContent = schools.filter(s => s.subscription_status === 'active').length;
+  document.getElementById('statSuspended').textContent = schools.filter(s => s.subscription_status === 'suspended').length;
+  document.getElementById('statGrace').textContent = schools.filter(s => s.subscription_status === 'grace').length;
+
+  const el = document.getElementById('schoolsList');
+  if (!schools.length) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">🏫</div><h3>No schools yet</h3><p>Create the first school above.</p></div>`;
+    return;
+  }
+
+  const statusColor = { active: 'var(--green)', grace: 'var(--warn)', readonly: 'var(--info)', suspended: 'var(--error)' };
+  const statusLabel = { active: 'Active', grace: 'Grace Period', readonly: 'Read-Only', suspended: 'Suspended' };
+
+  el.innerHTML = schools.map(s => `
+    <div class="card" style="margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <div>
+          <div style="font-size:15px; font-weight:800;">${s.name}</div>
+          <div style="font-size:12px; color:var(--muted); font-family:monospace;">${s.id}</div>
+        </div>
+        <span class="pill" style="background:${statusColor[s.subscription_status]}20; color:${statusColor[s.subscription_status]};">
+          ${statusLabel[s.subscription_status] || s.subscription_status}
+        </span>
+      </div>
+      <div style="display:flex; gap:8px;">
+        ${s.is_active
+          ? `<button class="btn btn-sm btn-danger" onclick="suspendSchool('${s.id}', this)">Suspend</button>`
+          : `<button class="btn btn-sm btn-primary" onclick="activateSchool('${s.id}', this)">Activate</button>`
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+async function createSchool() {
+  document.getElementById('errBanner').classList.remove('show');
+  document.getElementById('okBanner').style.display = 'none';
+
+  const id    = document.getElementById('schoolId').value.trim();
+  const name  = document.getElementById('schoolName').value.trim();
+  const addr  = document.getElementById('schoolAddr').value.trim();
+  const phone = document.getElementById('schoolPhone').value.trim();
+  const email = document.getElementById('schoolEmail').value.trim();
+
+  if (!id || !name) {
+    document.getElementById('errText').textContent = 'School ID and Name are required.';
+    document.getElementById('errBanner').classList.add('show');
+    return;
+  }
+
+  const btn = document.getElementById('createBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const res = await API.post('/schools/', { id, name, address: addr, phone, email });
+  btn.disabled = false; btn.textContent = '+ Create School';
+
+  if (res.ok) {
+    document.getElementById('okText').textContent = `School ${id} created successfully.`;
+    document.getElementById('okBanner').style.display = 'flex';
+    ['schoolId','schoolName','schoolAddr','schoolPhone','schoolEmail'].forEach(f => document.getElementById(f).value = '');
+    showToast(`✅ ${name} created`);
+    loadSchools();
+  } else {
+    document.getElementById('errText').textContent = res.error || 'Failed to create school.';
+    document.getElementById('errBanner').classList.add('show');
+  }
+}
+
+async function suspendSchool(id, btn) {
+  if (!confirm(`Suspend ${id}? The school will enter read-only mode.`)) return;
+  btn.disabled = true;
+  const res = await API.patch(`/schools/${id}/suspend`, {});
+  if (res.ok) { showToast(`${id} suspended`); loadSchools(); }
+  else { showToast(res.error || 'Failed', 'error'); btn.disabled = false; }
+}
+
+async function activateSchool(id, btn) {
+  btn.disabled = true;
+  const res = await API.patch(`/schools/${id}/activate`, {});
+  if (res.ok) { showToast(`✅ ${id} activated`); loadSchools(); }
+  else { showToast(res.error || 'Failed', 'error'); btn.disabled = false; }
+}
+
+function logout() { Auth.clear(); window.location.href = 'index.html'; }
+
+loadSchools();
+</script>
+</body>
+</html>

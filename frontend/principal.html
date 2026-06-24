@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Principal Dashboard</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .subject-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    overflow-x: auto;
+    position: sticky;
+    top: 56px;
+    z-index: 90;
+  }
+
+  .tab-btn {
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .tab-btn.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="offline-ribbon" id="offlineRibbon">📵 You are offline</div>
+
+<nav class="top-nav">
+  <div class="nav-logo">Edu<span>Sync</span></div>
+  <div class="nav-right">
+    <div class="sync-dot" id="syncDot"></div>
+    <div class="nav-user" id="navUser">Principal</div>
+    <button class="nav-logout" onclick="logout()">⎋</button>
+  </div>
+</nav>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab('approvals')">Approvals</button>
+  <button class="tab-btn" onclick="switchTab('results')">Results</button>
+  <button class="tab-btn" onclick="switchTab('students')">Students</button>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div id="tab-overview" class="tab-panel active">
+  <div class="page-header">
+    <h1 id="schoolName">Dashboard</h1>
+    <p id="sessionInfo">Loading session…</p>
+  </div>
+  <div class="page-content">
+    <div class="stat-row" style="margin:0 0 16px;">
+      <div class="stat-chip"><div class="val" id="statTeachers">—</div><div class="lbl">Teachers</div></div>
+      <div class="stat-chip"><div class="val" id="statStudents">—</div><div class="lbl">Students</div></div>
+      <div class="stat-chip"><div class="val" id="statPending">—</div><div class="lbl">Pending</div></div>
+      <div class="stat-chip"><div class="val" id="statApproved">—</div><div class="lbl">Approved</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="section-label">Quick Actions</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <button class="btn btn-primary" onclick="switchTab('approvals')">📋 Review Pending Results</button>
+        <button class="btn btn-secondary" onclick="switchTab('results')">📄 View All Results</button>
+        <a href="result-card.html" class="btn btn-secondary" style="text-align:center;">🧾 Print Result Card</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APPROVALS TAB -->
+<div id="tab-approvals" class="tab-panel">
+  <div class="page-header">
+    <h1>Pending Approvals</h1>
+    <p>Review and approve submitted results from teachers</p>
+  </div>
+  <div class="page-content">
+    <div id="pendingList">
+      <div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS TAB -->
+<div id="tab-results" class="tab-panel">
+  <div class="page-header">
+    <h1>All Results</h1>
+    <p>View results by class and subject</p>
+  </div>
+  <div class="page-content">
+    <div class="field">
+      <label>Filter by Class</label>
+      <div class="input-wrap">
+        <span class="icon">🏫</span>
+        <select id="classFilter" onchange="loadResults()">
+          <option value="">All Classes</option>
+        </select>
+      </div>
+    </div>
+    <div id="resultsList">
+      <div class="empty-state"><div class="emoji">📊</div><h3>Select a class to view results</h3></div>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENTS TAB -->
+<div id="tab-students" class="tab-panel">
+  <div class="page-header">
+    <h1>Students</h1>
+    <p>View and manage student records</p>
+  </div>
+  <div class="page-content">
+    <div class="field">
+      <label>Filter by Class</label>
+      <div class="input-wrap">
+        <span class="icon">🏫</span>
+        <select id="studentClassFilter" onchange="loadStudents()">
+          <option value="">All Classes</option>
+        </select>
+      </div>
+    </div>
+    <div id="studentsList">
+      <div class="empty-state"><div class="emoji">👥</div><h3>Loading students…</h3></div>
+    </div>
+    <div style="margin-top:16px;">
+      <a href="register-student.html" class="btn btn-primary">+ Register New Student</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+const user = Auth.user();
+if (!user || (user.role !== 'school_admin' && user.role !== 'super_admin')) {
+  window.location.href = 'index.html';
+}
+
+document.getElementById('navUser').textContent = user.name.split(' ')[0];
+
+function updateOnline() {
+  const online = navigator.onLine;
+  document.getElementById('syncDot').classList.toggle('offline', !online);
+  document.getElementById('offlineRibbon').style.display = online ? 'none' : 'block';
+}
+window.addEventListener('online', updateOnline);
+window.addEventListener('offline', updateOnline);
+updateOnline();
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+
+  if (name === 'approvals') loadPending();
+  if (name === 'results') loadClasses('classFilter');
+  if (name === 'students') { loadClasses('studentClassFilter'); loadStudents(); }
+}
+
+let classes = [];
+
+async function loadDashboard() {
+  const schoolRes = await API.get(`/schools/me`);
+  if (schoolRes.ok) {
+    document.getElementById('schoolName').textContent = schoolRes.data.name;
+  }
+
+  const sessRes = await API.get(`/schools/${user.school_id}/sessions`);
+  if (sessRes.ok) {
+    const active = sessRes.data.find(s => s.is_active);
+    if (active) {
+      const termLabel = { first: 'First Term', second: 'Second Term', third: 'Third Term' }[active.current_term];
+      document.getElementById('sessionInfo').textContent = `${termLabel} · ${active.name}`;
+    }
+  }
+
+  const teacherRes = await API.get('/teachers/');
+  if (teacherRes.ok) document.getElementById('statTeachers').textContent = teacherRes.data.length;
+
+  const stuRes = await API.get('/students/');
+  if (stuRes.ok) document.getElementById('statStudents').textContent = stuRes.data.length;
+}
+
+async function loadPending() {
+  const el = document.getElementById('pendingList');
+  const subjRes = await API.get(`/schools/${user.school_id}/subjects`);
+  if (!subjRes.ok) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">⚠️</div><h3>Could not load subjects</h3></div>`;
+    return;
+  }
+
+  const subjects = subjRes.data;
+  if (!subjects.length) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">✅</div><h3>Nothing to approve</h3><p>No subjects have submitted results yet.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = subjects.map(s => `
+    <div class="subject-card">
+      <div>
+        <div style="font-size:15px; font-weight:700;">${s.name}</div>
+        <div style="font-size:12px; color:var(--muted);">Class ${s.class_id}</div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="approveSubject(${s.id}, this)">
+        Approve
+      </button>
+    </div>
+  `).join('');
+}
+
+async function approveSubject(subjectId, btn) {
+  btn.disabled = true;
+  btn.textContent = '…';
+  const res = await API.post(`/results/approve/${subjectId}`, {});
+  if (res.ok) {
+    showToast('✅ Results approved!');
+    btn.closest('.subject-card').style.opacity = '0.5';
+    btn.textContent = 'Approved';
+  } else {
+    btn.disabled = false;
+    btn.textContent = 'Approve';
+    showToast(res.error || 'Failed to approve', 'error');
+  }
+}
+
+async function loadClasses(selectId) {
+  const res = await API.get(`/schools/${user.school_id}/classes`);
+  if (!res.ok) return;
+  classes = res.data;
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = '<option value="">All Classes</option>' +
+    classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+async function loadResults() {
+  const classId = document.getElementById('classFilter').value;
+  const el = document.getElementById('resultsList');
+  if (!classId) { el.innerHTML = `<div class="empty-state"><div class="emoji">📊</div><h3>Select a class above</h3></div>`; return; }
+
+  el.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div>`;
+  const stuRes = await API.get(`/students/?class_id=${classId}`);
+  if (!stuRes.ok || !stuRes.data.length) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">👥</div><h3>No students in this class</h3></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` +
+    stuRes.data.map(s => `
+      <div class="card-sm" style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:14px; font-weight:700;">${s.full_name}</div>
+          <div style="font-size:11px; color:var(--muted); font-family:monospace;">${s.id}</div>
+        </div>
+        <a href="result-card.html?student=${s.id}" class="btn btn-sm btn-secondary">View Card</a>
+      </div>
+    `).join('') + `</div>`;
+}
+
+async function loadStudents() {
+  const classId = document.getElementById('studentClassFilter').value;
+  const el = document.getElementById('studentsList');
+  const url = classId ? `/students/?class_id=${classId}` : '/students/';
+  const res = await API.get(url);
+  if (!res.ok || !res.data.length) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">👥</div><h3>No students found</h3></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` +
+    res.data.map(s => `
+      <div class="card-sm">
+        <div style="font-size:14px; font-weight:700;">${s.full_name}</div>
+        <div style="font-size:11px; color:var(--muted); font-family:monospace; margin-top:2px;">${s.id}</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.gender === 'M' ? '👦' : '👧'} · Status: ${s.status}</div>
+      </div>
+    `).join('') + `</div>`;
+}
+
+function logout() { Auth.clear(); window.location.href = 'index.html'; }
+
+loadDashboard();
+</script>
+</body>
+</html>

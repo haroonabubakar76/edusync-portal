@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Register Student</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="top-nav">
+  <div style="display:flex; align-items:center; gap:10px;">
+    <button onclick="history.back()" style="background:none;border:none;color:rgba(255,255,255,0.7);font-size:20px;cursor:pointer;">‹</button>
+    <div class="nav-logo">Edu<span>Sync</span></div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>Register Student</h1>
+  <p>Add a new student to the school records</p>
+</div>
+
+<div class="page-content">
+
+  <div class="banner banner-error" id="errBanner"><span>⚠️</span><span id="errText">Error</span></div>
+  <div class="banner banner-success" id="okBanner" style="display:none;"><span>✅</span><span id="okText">Student registered!</span></div>
+
+  <div class="card">
+
+    <div class="field">
+      <label>Full Name</label>
+      <div class="input-wrap">
+        <span class="icon">👤</span>
+        <input type="text" id="fullName" placeholder="e.g. Amina Bello">
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="field">
+        <label>Gender</label>
+        <div class="input-wrap">
+          <span class="icon">⚥</span>
+          <select id="gender">
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Admission Year</label>
+        <div class="input-wrap">
+          <span class="icon">📅</span>
+          <input type="number" id="admYear" placeholder="2024" min="2000" max="2099" value="2024">
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Class</label>
+      <div class="input-wrap">
+        <span class="icon">🏫</span>
+        <select id="classId">
+          <option value="">Select class…</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Parent / Guardian</div>
+
+    <div class="field">
+      <label>Parent Name</label>
+      <div class="input-wrap">
+        <span class="icon">👨‍👩‍👧</span>
+        <input type="text" id="parentName" placeholder="e.g. Alhaji Bello Sani">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Parent Phone</label>
+      <div class="input-wrap">
+        <span class="icon">📱</span>
+        <input type="text" id="parentPhone" placeholder="08012345678" maxlength="11">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>WhatsApp Number <span style="font-weight:400; color:var(--muted); text-transform:none;">(for result delivery)</span></label>
+      <div class="input-wrap">
+        <span class="icon">💬</span>
+        <input type="text" id="parentWhatsapp" placeholder="Same as phone or different">
+      </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:10px; padding:12px; background:var(--green-light); border-radius:8px; margin-bottom:16px;">
+      <input type="checkbox" id="consent" style="width:18px; height:18px; accent-color:var(--green);">
+      <label for="consent" style="font-size:12px; font-weight:500; text-transform:none; color:var(--dark); cursor:pointer; margin:0;">
+        Parent consents to receive result notifications via WhatsApp/SMS
+      </label>
+    </div>
+
+    <button class="btn btn-primary" id="saveBtn" onclick="registerStudent()">
+      Register Student
+    </button>
+
+  </div>
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+const user = Auth.user();
+if (!user || (user.role !== 'school_admin' && user.role !== 'super_admin')) {
+  window.location.href = 'index.html';
+}
+
+async function loadClasses() {
+  const res = await API.get(`/schools/${user.school_id}/classes`);
+  if (!res.ok) return;
+  const sel = document.getElementById('classId');
+  sel.innerHTML = '<option value="">Select class…</option>' +
+    res.data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+async function registerStudent() {
+  const errBanner = document.getElementById('errBanner');
+  const okBanner  = document.getElementById('okBanner');
+  errBanner.classList.remove('show');
+  okBanner.style.display = 'none';
+
+  const fullName = document.getElementById('fullName').value.trim();
+  const gender   = document.getElementById('gender').value;
+  const admYear  = parseInt(document.getElementById('admYear').value);
+  const classId  = parseInt(document.getElementById('classId').value);
+  const consent  = document.getElementById('consent').checked;
+
+  if (!fullName) { document.getElementById('errText').textContent = 'Enter student full name.'; errBanner.classList.add('show'); return; }
+  if (!classId)  { document.getElementById('errText').textContent = 'Select a class.'; errBanner.classList.add('show'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Registering…';
+
+  const payload = {
+    full_name: fullName,
+    gender,
+    class_id: classId,
+    admission_year: admYear,
+    parent_name: document.getElementById('parentName').value.trim() || null,
+    parent_phone: document.getElementById('parentPhone').value.trim() || null,
+    parent_whatsapp: document.getElementById('parentWhatsapp').value.trim() || null,
+    parent_consent: consent
+  };
+
+  const res = await API.post('/students/', payload);
+
+  btn.disabled = false;
+  btn.textContent = 'Register Student';
+
+  if (res.ok) {
+    document.getElementById('okText').textContent = `✅ ${fullName} registered — ID: ${res.data.student_id}`;
+    okBanner.style.display = 'flex';
+    // Clear form
+    ['fullName','parentName','parentPhone','parentWhatsapp'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('consent').checked = false;
+    showToast(`Student registered: ${res.data.student_id}`);
+  } else {
+    document.getElementById('errText').textContent = res.error || 'Registration failed. Try again.';
+    errBanner.classList.add('show');
+  }
+}
+
+loadClasses();
+</script>
+</body>
+</html>

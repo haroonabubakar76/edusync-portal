@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Teacher Dashboard</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="offline-ribbon" id="offlineRibbon">📵 You are offline — data saves locally and will sync when connected</div>
+
+<nav class="top-nav">
+  <div class="nav-logo">Edu<span>Sync</span></div>
+  <div class="nav-right">
+    <div class="sync-dot" id="syncDot" title="Online"></div>
+    <div class="nav-user" id="navUser">Teacher</div>
+    <button class="nav-logout" onclick="logout()" title="Sign out">⎋</button>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1 id="greetingName">Good morning 👋</h1>
+  <p id="greetingSub">Select a subject below to enter scores</p>
+</div>
+
+<div class="page-content">
+
+  <!-- STATS -->
+  <div class="stat-row" style="margin:0 0 16px;">
+    <div class="stat-chip">
+      <div class="val" id="statSubjects">—</div>
+      <div class="lbl">Subjects</div>
+    </div>
+    <div class="stat-chip">
+      <div class="val" id="statStudents">—</div>
+      <div class="lbl">Students</div>
+    </div>
+    <div class="stat-chip">
+      <div class="val" id="statDraft">—</div>
+      <div class="lbl">Draft</div>
+    </div>
+    <div class="stat-chip">
+      <div class="val" id="statSubmitted">—</div>
+      <div class="lbl">Submitted</div>
+    </div>
+  </div>
+
+  <!-- SESSION INFO -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="section-label">Current Session</div>
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div>
+        <div style="font-size:16px; font-weight:800;" id="sessionName">Loading…</div>
+        <div style="font-size:13px; color:var(--muted);" id="termName">—</div>
+      </div>
+      <div style="background:var(--green-light); color:var(--green); font-size:12px; font-weight:700; padding:6px 12px; border-radius:20px;" id="termPill">—</div>
+    </div>
+  </div>
+
+  <!-- SUBJECTS LIST -->
+  <div class="section-label">My Subjects</div>
+  <div id="subjectsList">
+    <div class="empty-state">
+      <div class="emoji">⏳</div>
+      <h3>Loading subjects…</h3>
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/api.js"></script>
+<script>
+// ── Auth Guard ──────────────────────────────────────
+const user = Auth.user();
+if (!user || user.role !== 'teacher') { window.location.href = 'index.html'; }
+
+// ── Sync Status ─────────────────────────────────────
+function updateOnlineStatus() {
+  const dot = document.getElementById('syncDot');
+  const ribbon = document.getElementById('offlineRibbon');
+  if (navigator.onLine) {
+    dot.classList.remove('offline');
+    ribbon.style.display = 'none';
+    OfflineQueue.flush();
+  } else {
+    dot.classList.add('offline');
+    ribbon.style.display = 'block';
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ── Greeting ────────────────────────────────────────
+document.getElementById('navUser').textContent = user.name.split(' ')[0];
+const hour = new Date().getHours();
+const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+document.getElementById('greetingName').textContent = `${greet}, ${user.name.split(' ')[0]} 👋`;
+
+// ── Load Data ───────────────────────────────────────
+let subjects = [];
+let sessionData = null;
+
+async function loadDashboard() {
+  // Load session
+  const sessRes = await API.get(`/schools/${user.school_id}/sessions`);
+  if (sessRes.ok) {
+    const active = sessRes.data.find(s => s.is_active);
+    if (active) {
+      sessionData = active;
+      document.getElementById('sessionName').textContent = active.name;
+      const termLabel = { first: 'First Term', second: 'Second Term', third: 'Third Term' }[active.current_term] || active.current_term;
+      document.getElementById('termName').textContent = termLabel;
+      document.getElementById('termPill').textContent = termLabel;
+      document.getElementById('greetingSub').textContent = `${termLabel} · ${active.name}`;
+    }
+  }
+
+  // Load subjects for this teacher's class
+  const subjRes = await API.get(`/schools/${user.school_id}/subjects`);
+  if (subjRes.ok) {
+    // Filter subjects assigned to this teacher
+    // We'll load teacher_id from /auth/me
+    const meRes = await API.get('/auth/me');
+    subjects = subjRes.data;
+    renderSubjects(subjects);
+    document.getElementById('statSubjects').textContent = subjects.length;
+  }
+}
+
+function renderSubjects(list) {
+  const el = document.getElementById('subjectsList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="emoji">📋</div>
+      <h3>No subjects assigned</h3>
+      <p>Ask your principal to assign subjects to your account.</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(s => `
+    <div class="card" style="margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;"
+         onclick="openSubject(${s.id}, '${s.name}', ${s.class_id})">
+      <div>
+        <div style="font-size:15px; font-weight:700; margin-bottom:3px;">${s.name}</div>
+        <div style="font-size:12px; color:var(--muted);">Class ID: ${s.class_id}</div>
+      </div>
+      <div style="font-size:22px; color:var(--muted);">›</div>
+    </div>
+  `).join('');
+}
+
+function openSubject(subjectId, subjectName, classId) {
+  localStorage.setItem('es_active_subject', JSON.stringify({ id: subjectId, name: subjectName, class_id: classId }));
+  window.location.href = 'scores.html';
+}
+
+function logout() {
+  Auth.clear();
+  window.location.href = 'index.html';
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
