@@ -6,79 +6,23 @@
 <title>EduSync — Score Entry</title>
 <link rel="stylesheet" href="assets/style.css">
 <style>
-  .student-row {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow);
-  }
-
-  .student-name {
-    font-size: 14px; font-weight: 700; color: var(--dark);
-    margin-bottom: 2px;
-  }
-
-  .student-id-tag {
-    font-size: 11px; color: var(--muted); font-family: monospace;
-    margin-bottom: 10px;
-  }
-
-  .score-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-  }
-
-  .score-col label {
-    font-size: 10px; font-weight: 700; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.5px;
-    margin-bottom: 4px; display: block;
-  }
-
-  .score-input {
-    width: 100%; padding: 9px 6px;
-    border: 1.5px solid var(--border); border-radius: 8px;
-    font-size: 16px; font-weight: 700; color: var(--dark);
-    background: var(--surface); text-align: center; outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none; -moz-appearance: textfield;
-  }
-
-  .score-input:focus { border-color: var(--green); background: var(--white); }
-  .score-input.over  { border-color: var(--error); background: #FDF0EE; }
-  .score-input::-webkit-inner-spin-button,
-  .score-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-
-  .total-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 10px; font-size: 13px; font-weight: 700;
-  }
-
-  .autosave-tag {
-    font-size: 10px; color: var(--muted);
-    display: flex; align-items: center; gap: 4px; margin-top: 4px;
-  }
-
-  .submit-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--white); padding: 14px 16px;
-    box-shadow: 0 -2px 16px rgba(0,0,0,0.10);
-    display: flex; gap: 10px;
-    max-width: 640px; margin: 0 auto;
-  }
-
-  /* leave space for submit bar */
-  .page-content { padding-bottom: 100px !important; }
-
-  .config-bar {
-    background: var(--green); color: #fff;
-    padding: 10px 16px; font-size: 12px; font-weight: 600;
-    display: flex; gap: 16px;
-  }
-
-  .config-bar span { opacity: 0.8; }
-  .config-bar strong { opacity: 1; }
+  .student-row { background:var(--white); border-radius:var(--radius); padding:14px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .student-name { font-size:14px; font-weight:700; color:var(--dark); margin-bottom:2px; }
+  .student-id-tag { font-size:11px; color:var(--muted); font-family:monospace; margin-bottom:10px; }
+  .score-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .score-col label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; display:block; }
+  .score-input { width:100%; padding:9px 6px; border:1.5px solid var(--border); border-radius:8px; font-size:16px; font-weight:700; color:var(--dark); background:var(--surface); text-align:center; outline:none; transition:border-color 0.2s; -webkit-appearance:none; -moz-appearance:textfield; }
+  .score-input:focus { border-color:var(--green); background:var(--white); }
+  .score-input.over  { border-color:var(--error); background:#FDF0EE; }
+  .score-input::-webkit-inner-spin-button, .score-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .score-input:disabled { opacity:0.5; cursor:not-allowed; background:#f0f0f0; }
+  .total-badge { display:inline-flex; align-items:center; gap:6px; margin-top:10px; font-size:13px; font-weight:700; }
+  .savetag { font-size:10px; color:var(--muted); display:flex; align-items:center; gap:4px; margin-top:4px; }
+  .submit-bar { position:fixed; bottom:0; left:0; right:0; background:var(--white); padding:14px 16px; box-shadow:0 -2px 16px rgba(0,0,0,0.10); display:flex; gap:10px; max-width:640px; margin:0 auto; }
+  .page-content { padding-bottom:100px !important; }
+  .config-bar { background:var(--green); color:#fff; padding:10px 16px; font-size:12px; font-weight:600; display:flex; gap:16px; }
+  .config-bar span { opacity:0.8; }
+  .rejected-banner { background:#FEF9EC; border:1px solid #F5D78A; border-radius:8px; padding:10px 14px; font-size:13px; color:#8a6000; margin-bottom:12px; display:none; }
 </style>
 </head>
 <body>
@@ -101,34 +45,21 @@
   <p id="subjectSub">Enter CA1, CA2 and Exam scores for each student</p>
 </div>
 
-<div class="config-bar" id="configBar">
+<div class="config-bar">
   <div><span>CA1 max: </span><strong id="ca1Max">20</strong></div>
   <div><span>CA2 max: </span><strong id="ca2Max">20</strong></div>
   <div><span>Exam max: </span><strong id="examMax">60</strong></div>
 </div>
 
 <div class="page-content">
-
-  <div class="banner banner-error" id="errBanner" style="margin-bottom:12px;">
-    <span>⚠️</span><span id="errText">Error</span>
-  </div>
-
-  <div class="banner banner-success" id="okBanner" style="margin-bottom:12px; display:none;">
-    <span>✅</span><span id="okText">Saved</span>
-  </div>
-
-  <div id="studentsList">
-    <div class="empty-state"><div class="emoji">⏳</div><h3>Loading students…</h3></div>
-  </div>
-
+  <div class="rejected-banner" id="rejectedBanner">⚠️ These results were rejected by the principal. Please correct and resubmit.</div>
+  <div class="banner banner-error" id="errBanner" style="margin-bottom:12px;"><span>⚠️</span><span id="errText">Error</span></div>
+  <div id="studentsList"><div class="empty-state"><div class="emoji">⏳</div><h3>Loading students…</h3></div></div>
 </div>
 
-<!-- Submit Bar -->
 <div class="submit-bar">
   <button class="btn btn-secondary" style="flex:1;" onclick="history.back()">← Back</button>
-  <button class="btn btn-primary" style="flex:2;" id="submitBtn" onclick="submitResults()">
-    Submit All Results
-  </button>
+  <button class="btn btn-primary" style="flex:2;" id="submitBtn" onclick="submitResults()">Submit All Results</button>
 </div>
 
 <script src="assets/api.js"></script>
@@ -142,13 +73,11 @@ if (!subjectData.id) { window.location.href = 'teacher.html'; }
 document.getElementById('navUser').textContent = user.name.split(' ')[0];
 document.getElementById('subjectTitle').textContent = subjectData.name || 'Score Entry';
 
-// Grading config
 let config = { ca1_max: 20, ca2_max: 20, exam_max: 60 };
 let students = [];
-let scores = {}; // { student_id: { ca1, ca2, exam } }
-let autoSaveTimer = null;
+let existingResults = {}; // student_id -> result
+let hasRejected = false;
 
-// Online status
 function updateOnline() {
   const online = navigator.onLine;
   document.getElementById('syncDot').classList.toggle('offline', !online);
@@ -159,105 +88,127 @@ window.addEventListener('offline', updateOnline);
 updateOnline();
 
 async function loadPage() {
-  // Load grading config
+  // Grading config
   const cfgRes = await API.get(`/schools/${user.school_id}/grading-config`);
   if (cfgRes.ok) {
     config = cfgRes.data;
-    document.getElementById('ca1Max').textContent = config.ca1_max;
-    document.getElementById('ca2Max').textContent = config.ca2_max;
+    document.getElementById('ca1Max').textContent  = config.ca1_max;
+    document.getElementById('ca2Max').textContent  = config.ca2_max;
     document.getElementById('examMax').textContent = config.exam_max;
   }
 
-  // Load students for this class
+  // Students
   const stuRes = await API.get(`/students/?class_id=${subjectData.class_id}`);
-  if (stuRes.ok) {
-    students = stuRes.data;
-    renderStudents();
-  } else {
-    document.getElementById('studentsList').innerHTML = `
-      <div class="empty-state">
-        <div class="emoji">👥</div>
-        <h3>No students found</h3>
-        <p>No students are registered for this class yet.</p>
-      </div>`;
+  if (!stuRes.ok || !stuRes.data.length) {
+    document.getElementById('studentsList').innerHTML = `<div class="empty-state"><div class="emoji">👥</div><h3>No students found</h3><p>No students registered for this class.</p></div>`;
+    return;
   }
+  students = stuRes.data;
+
+  // Load existing results for this subject
+  for (const s of students) {
+    const res = await API.get(`/results/student/${s.id}`);
+    if (res.ok) {
+      const subjectResult = res.data.find(r => r.subject_id === subjectData.id);
+      if (subjectResult) {
+        existingResults[s.id] = subjectResult;
+        if (subjectResult.status === 'rejected') hasRejected = true;
+      }
+    }
+  }
+
+  if (hasRejected) {
+    document.getElementById('rejectedBanner').style.display = 'block';
+  }
+
+  renderStudents();
+}
+
+function isLocked(studentId) {
+  const r = existingResults[studentId];
+  if (!r) return false;
+  return r.status === 'submitted' || r.status === 'approved';
 }
 
 function renderStudents() {
   const el = document.getElementById('studentsList');
-  if (!students.length) {
-    el.innerHTML = `<div class="empty-state"><div class="emoji">👥</div><h3>No students in this class</h3></div>`;
-    return;
-  }
+  el.innerHTML = students.map(s => {
+    const existing = existingResults[s.id];
+    const locked   = isLocked(s.id);
+    const status   = existing?.status || 'draft';
+    const ca1Val   = existing?.ca1_score ?? '';
+    const ca2Val   = existing?.ca2_score ?? '';
+    const examVal  = existing?.exam_score ?? '';
+    const total    = existing?.total_score ?? '';
+    const grade    = existing?.grade ?? '';
+    const gradeColor = { A:'#1B7B4B', B:'#2E75B6', C:'#D4A017', D:'#E67E22', F:'#C0392B' }[grade] || 'var(--muted)';
 
-  el.innerHTML = students.map(s => `
-    <div class="student-row" id="row_${s.id}">
-      <div class="student-name">${s.full_name}</div>
+    const statusTag = locked
+      ? `<span class="pill ${status === 'approved' ? 'pill-approved' : 'pill-submitted'}" style="margin-left:6px;">${status}</span>`
+      : (status === 'rejected' ? `<span class="pill" style="background:#FEF9EC;color:#8a6000;margin-left:6px;">Rejected — Edit & Resubmit</span>` : '');
+
+    return `
+    <div class="student-row">
+      <div class="student-name">${s.full_name} ${statusTag}</div>
       <div class="student-id-tag">${s.id}</div>
       <div class="score-grid">
         <div class="score-col">
           <label>CA1 /${config.ca1_max}</label>
           <input type="number" class="score-input" id="ca1_${s.id}"
-            min="0" max="${config.ca1_max}" placeholder="0"
+            min="0" max="${config.ca1_max}" value="${ca1Val}" placeholder="0"
+            ${locked ? 'disabled' : ''}
             oninput="onScoreChange('${s.id}')"
             onblur="autoSave('${s.id}')">
         </div>
         <div class="score-col">
           <label>CA2 /${config.ca2_max}</label>
           <input type="number" class="score-input" id="ca2_${s.id}"
-            min="0" max="${config.ca2_max}" placeholder="0"
+            min="0" max="${config.ca2_max}" value="${ca2Val}" placeholder="0"
+            ${locked ? 'disabled' : ''}
             oninput="onScoreChange('${s.id}')"
             onblur="autoSave('${s.id}')">
         </div>
         <div class="score-col">
           <label>Exam /${config.exam_max}</label>
           <input type="number" class="score-input" id="exam_${s.id}"
-            min="0" max="${config.exam_max}" placeholder="0"
+            min="0" max="${config.exam_max}" value="${examVal}" placeholder="0"
+            ${locked ? 'disabled' : ''}
             oninput="onScoreChange('${s.id}')"
             onblur="autoSave('${s.id}')">
         </div>
       </div>
-      <div class="total-badge" id="badge_${s.id}">
-        <span style="color:var(--muted); font-size:12px;">Total:</span>
-        <span id="total_${s.id}" style="font-size:15px;">—</span>
-        <span id="grade_${s.id}" style="font-size:13px; color:var(--muted);"></span>
+      <div class="total-badge">
+        <span style="color:var(--muted);font-size:12px;">Total:</span>
+        <span id="total_${s.id}" style="color:${total >= 40 ? 'var(--green)' : total ? 'var(--error)' : 'var(--muted)'};">${total || '—'}</span>
+        <span id="grade_${s.id}" style="color:${gradeColor};">${grade}</span>
       </div>
-      <div class="autosave-tag" id="savetag_${s.id}">
-        <span>🕐</span><span>Not saved yet</span>
+      <div class="savetag" id="savetag_${s.id}">
+        ${locked ? '<span>🔒</span><span>Locked — submitted to principal</span>' : existing ? '<span>✅</span><span style="color:var(--green);">Saved</span>' : '<span>🕐</span><span>Not saved yet</span>'}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function getVal(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
 
 function onScoreChange(studentId) {
+  if (isLocked(studentId)) return;
   const ca1  = getVal(`ca1_${studentId}`);
   const ca2  = getVal(`ca2_${studentId}`);
   const exam = getVal(`exam_${studentId}`);
 
-  // Validate
   document.getElementById(`ca1_${studentId}`)?.classList.toggle('over', ca1 > config.ca1_max);
   document.getElementById(`ca2_${studentId}`)?.classList.toggle('over', ca2 > config.ca2_max);
   document.getElementById(`exam_${studentId}`)?.classList.toggle('over', exam > config.exam_max);
 
   const total = ca1 + ca2 + exam;
   const grade = calcGrade(total);
+  const gradeColors = { A:'#1B7B4B', B:'#2E75B6', C:'#D4A017', D:'#E67E22', F:'#C0392B' };
 
   const totalEl = document.getElementById(`total_${studentId}`);
   const gradeEl = document.getElementById(`grade_${studentId}`);
-  if (totalEl) {
-    totalEl.textContent = total;
-    totalEl.style.color = total >= 40 ? 'var(--green)' : 'var(--error)';
-  }
-  if (gradeEl) {
-    gradeEl.textContent = grade;
-    gradeEl.style.color = { A:'#1B7B4B', B:'#2E75B6', C:'#D4A017', D:'#E67E22', F:'#C0392B' }[grade] || '#666';
-  }
-
-  // Auto-save debounce — 30 seconds or on blur
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => autoSave(studentId), 30000);
+  if (totalEl) { totalEl.textContent = total; totalEl.style.color = total >= 40 ? 'var(--green)' : 'var(--error)'; }
+  if (gradeEl) { gradeEl.textContent = grade; gradeEl.style.color = gradeColors[grade] || '#666'; }
 }
 
 function calcGrade(total) {
@@ -269,50 +220,68 @@ function calcGrade(total) {
 }
 
 async function autoSave(studentId) {
+  if (isLocked(studentId)) return;
+  const ca1El  = document.getElementById(`ca1_${studentId}`);
+  const ca2El  = document.getElementById(`ca2_${studentId}`);
+  const examEl = document.getElementById(`exam_${studentId}`);
+  if (!ca1El?.value && !ca2El?.value && !examEl?.value) return;
+
   const ca1  = getVal(`ca1_${studentId}`);
   const ca2  = getVal(`ca2_${studentId}`);
   const exam = getVal(`exam_${studentId}`);
-
-  if (ca1 === 0 && ca2 === 0 && exam === 0) return;
   if (ca1 > config.ca1_max || ca2 > config.ca2_max || exam > config.exam_max) return;
 
-  const payload = {
-    student_id: studentId,
-    subject_id: subjectData.id,
-    ca1_score: ca1, ca2_score: ca2, exam_score: exam
-  };
-
-  const tagEl = document.getElementById(`savetag_${studentId}`);
-
-  if (!navigator.onLine) {
-    OfflineQueue.add({ path: '/results/save', body: payload });
-    if (tagEl) tagEl.innerHTML = '<span>💾</span><span style="color:var(--warn);">Saved offline — will sync when connected</span>';
-    return;
-  }
-
-  const res = await API.post('/results/save', payload);
+  const payload = { student_id: studentId, subject_id: subjectData.id, ca1_score: ca1, ca2_score: ca2, exam_score: exam };
+  const tagEl   = document.getElementById(`savetag_${studentId}`);
+  const res     = await API.post('/results/save', payload);
   if (res.ok) {
     if (tagEl) tagEl.innerHTML = '<span>✅</span><span style="color:var(--green);">Saved</span>';
   } else {
-    OfflineQueue.add({ path: '/results/save', body: payload });
-    if (tagEl) tagEl.innerHTML = '<span>⚠️</span><span style="color:var(--warn);">Save queued — will retry</span>';
+    if (tagEl) tagEl.innerHTML = `<span>⚠️</span><span style="color:var(--error);">${res.error}</span>`;
   }
 }
 
 async function submitResults() {
-  // Save all first
-  for (const s of students) { await autoSave(s.id); }
-
+  document.getElementById('errBanner').classList.remove('show');
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = 'Submitting…';
+  btn.textContent = 'Saving…';
 
+  let errors = [];
+  for (const s of students) {
+    if (isLocked(s.id)) continue;
+    const ca1El = document.getElementById(`ca1_${s.id}`);
+    if (!ca1El?.value) continue;
+
+    const res = await API.post('/results/save', {
+      student_id: s.id,
+      subject_id: subjectData.id,
+      ca1_score: getVal(`ca1_${s.id}`),
+      ca2_score: getVal(`ca2_${s.id}`),
+      exam_score: getVal(`exam_${s.id}`)
+    });
+    if (!res.ok) errors.push(`${s.full_name}: ${res.error}`);
+    else {
+      const tagEl = document.getElementById(`savetag_${s.id}`);
+      if (tagEl) tagEl.innerHTML = '<span>✅</span><span style="color:var(--green);">Saved</span>';
+    }
+  }
+
+  if (errors.length) {
+    document.getElementById('errText').textContent = errors.join(' | ');
+    document.getElementById('errBanner').classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Submit All Results';
+    return;
+  }
+
+  btn.textContent = 'Submitting…';
   const res = await API.post(`/results/submit/${subjectData.id}`, {});
   if (res.ok) {
     showToast(`✅ Results submitted for ${subjectData.name}!`);
     setTimeout(() => window.location.href = 'teacher.html', 1800);
   } else {
-    document.getElementById('errText').textContent = res.error || 'Submit failed. Try again.';
+    document.getElementById('errText').textContent = res.error || 'Submit failed.';
     document.getElementById('errBanner').classList.add('show');
     btn.disabled = false;
     btn.textContent = 'Submit All Results';

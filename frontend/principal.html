@@ -6,49 +6,15 @@
 <title>EduSync — Principal Dashboard</title>
 <link rel="stylesheet" href="assets/style.css">
 <style>
-  .subject-card {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .tab-bar {
-    display: flex;
-    background: var(--white);
-    border-bottom: 1px solid var(--border);
-    padding: 0 16px;
-    overflow-x: auto;
-    position: sticky;
-    top: 56px;
-    z-index: 90;
-  }
-
-  .tab-btn {
-    padding: 14px 18px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
-    transition: all 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .tab-btn.active {
-    color: var(--green);
-    border-bottom-color: var(--green);
-  }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .subject-card { background:var(--white); border-radius:var(--radius); padding:16px; margin-bottom:10px; box-shadow:var(--shadow); }
+  .tab-bar { display:flex; background:var(--white); border-bottom:1px solid var(--border); padding:0 16px; overflow-x:auto; position:sticky; top:56px; z-index:90; }
+  .tab-btn { padding:14px 18px; font-size:13px; font-weight:700; color:var(--muted); border:none; background:none; cursor:pointer; border-bottom:3px solid transparent; white-space:nowrap; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
+  .tab-btn.active { color:var(--green); border-bottom-color:var(--green); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+  .notify-dot { display:inline-block; width:8px; height:8px; background:var(--error); border-radius:50%; margin-left:4px; vertical-align:middle; }
+  .teacher-form { background:var(--surface); border-radius:var(--radius); padding:16px; margin-bottom:16px; border:1px solid var(--border); display:none; }
+  .teacher-form.show { display:block; }
 </style>
 </head>
 <body>
@@ -64,15 +30,15 @@
   </div>
 </nav>
 
-<!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
-  <button class="tab-btn" onclick="switchTab('approvals')">Approvals</button>
-  <button class="tab-btn" onclick="switchTab('results')">Results</button>
-  <button class="tab-btn" onclick="switchTab('students')">Students</button>
+  <button class="tab-btn active" id="tab-btn-overview"   onclick="switchTab('overview', this)">Overview</button>
+  <button class="tab-btn"        id="tab-btn-approvals"  onclick="switchTab('approvals', this)">Approvals <span class="notify-dot" id="pendingDot" style="display:none;"></span></button>
+  <button class="tab-btn"        id="tab-btn-results"    onclick="switchTab('results', this)">Results</button>
+  <button class="tab-btn"        id="tab-btn-students"   onclick="switchTab('students', this)">Students</button>
+  <button class="tab-btn"        id="tab-btn-teachers"   onclick="switchTab('teachers', this)">Teachers</button>
 </div>
 
-<!-- OVERVIEW TAB -->
+<!-- OVERVIEW -->
 <div id="tab-overview" class="tab-panel active">
   <div class="page-header">
     <h1 id="schoolName">Dashboard</h1>
@@ -82,39 +48,37 @@
     <div class="stat-row" style="margin:0 0 16px;">
       <div class="stat-chip"><div class="val" id="statTeachers">—</div><div class="lbl">Teachers</div></div>
       <div class="stat-chip"><div class="val" id="statStudents">—</div><div class="lbl">Students</div></div>
-      <div class="stat-chip"><div class="val" id="statPending">—</div><div class="lbl">Pending</div></div>
-      <div class="stat-chip"><div class="val" id="statApproved">—</div><div class="lbl">Approved</div></div>
+      <div class="stat-chip"><div class="val" id="statPending" style="color:var(--warn);">—</div><div class="lbl">Pending</div></div>
+      <div class="stat-chip"><div class="val" id="statApproved" style="color:var(--green);">—</div><div class="lbl">Approved</div></div>
     </div>
-
     <div class="card" style="margin-bottom:16px;">
       <div class="section-label">Quick Actions</div>
       <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
-        <button class="btn btn-primary" onclick="switchTab('approvals')">📋 Review Pending Results</button>
-        <button class="btn btn-secondary" onclick="switchTab('results')">📄 View All Results</button>
+        <button class="btn btn-primary" onclick="switchTab('approvals', document.getElementById('tab-btn-approvals'))">📋 Review Pending Results</button>
+        <button class="btn btn-secondary" onclick="switchTab('results', document.getElementById('tab-btn-results'))">📄 View All Results</button>
         <a href="result-card.html" class="btn btn-secondary" style="text-align:center;">🧾 Print Result Card</a>
+        <a href="register-student.html" class="btn btn-secondary" style="text-align:center;">➕ Register Student</a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- APPROVALS TAB -->
+<!-- APPROVALS -->
 <div id="tab-approvals" class="tab-panel">
   <div class="page-header">
     <h1>Pending Approvals</h1>
-    <p>Review and approve submitted results from teachers</p>
+    <p>Review and approve or reject submitted results</p>
   </div>
   <div class="page-content">
-    <div id="pendingList">
-      <div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div>
-    </div>
+    <div id="pendingList"><div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div></div>
   </div>
 </div>
 
-<!-- RESULTS TAB -->
+<!-- RESULTS -->
 <div id="tab-results" class="tab-panel">
   <div class="page-header">
     <h1>All Results</h1>
-    <p>View results by class and subject</p>
+    <p>View results by class</p>
   </div>
   <div class="page-content">
     <div class="field">
@@ -126,19 +90,20 @@
         </select>
       </div>
     </div>
-    <div id="resultsList">
-      <div class="empty-state"><div class="emoji">📊</div><h3>Select a class to view results</h3></div>
-    </div>
+    <div id="resultsList"><div class="empty-state"><div class="emoji">📊</div><h3>Select a class above</h3></div></div>
   </div>
 </div>
 
-<!-- STUDENTS TAB -->
+<!-- STUDENTS -->
 <div id="tab-students" class="tab-panel">
   <div class="page-header">
     <h1>Students</h1>
     <p>View and manage student records</p>
   </div>
   <div class="page-content">
+    <div style="margin-bottom:12px;">
+      <a href="register-student.html" class="btn btn-primary">➕ Register New Student</a>
+    </div>
     <div class="field">
       <label>Filter by Class</label>
       <div class="input-wrap">
@@ -148,22 +113,60 @@
         </select>
       </div>
     </div>
-    <div id="studentsList">
-      <div class="empty-state"><div class="emoji">👥</div><h3>Loading students…</h3></div>
+    <div id="studentsList"><div class="empty-state"><div class="emoji">👥</div><h3>Loading students…</h3></div></div>
+  </div>
+</div>
+
+<!-- TEACHERS -->
+<div id="tab-teachers" class="tab-panel">
+  <div class="page-header">
+    <h1>Teachers</h1>
+    <p>Manage teacher accounts</p>
+  </div>
+  <div class="page-content">
+
+    <button class="btn btn-primary" style="margin-bottom:12px;" onclick="toggleTeacherForm()">➕ Add New Teacher</button>
+
+    <!-- Add Teacher Form -->
+    <div class="teacher-form" id="teacherForm">
+      <div class="section-label" style="margin-bottom:12px;">New Teacher Account</div>
+      <div class="banner banner-error" id="tErrBanner"><span>⚠️</span><span id="tErrText"></span></div>
+      <div class="banner banner-success" id="tOkBanner" style="display:none;"><span>✅</span><span id="tOkText"></span></div>
+      <div class="field">
+        <label>Full Name</label>
+        <div class="input-wrap"><span class="icon">👤</span><input type="text" id="tName" placeholder="e.g. Mrs. Fatima Bello"></div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <div class="input-wrap"><span class="icon">✉️</span><input type="email" id="tEmail" placeholder="teacher@school.ng"></div>
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <div class="input-wrap"><span class="icon">📱</span><input type="text" id="tPhone" placeholder="08012345678"></div>
+      </div>
+      <div class="field">
+        <label>Staff ID <span style="font-weight:400;color:var(--muted);text-transform:none;">(optional)</span></label>
+        <div class="input-wrap"><span class="icon">🪪</span><input type="text" id="tStaffId" placeholder="e.g. TCH002"></div>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap"><span class="icon">🔒</span><input type="password" id="tPassword" placeholder="Minimum 6 characters"></div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" style="flex:2;" onclick="createTeacher()">Create Account</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="toggleTeacherForm()">Cancel</button>
+      </div>
     </div>
-    <div style="margin-top:16px;">
-      <a href="register-student.html" class="btn btn-primary">+ Register New Student</a>
-    </div>
+
+    <div class="section-label" style="margin-bottom:10px;">All Teachers</div>
+    <div id="teachersList"><div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div></div>
   </div>
 </div>
 
 <script src="assets/api.js"></script>
 <script>
 const user = Auth.user();
-if (!user || (user.role !== 'school_admin' && user.role !== 'super_admin')) {
-  window.location.href = 'index.html';
-}
-
+if (!user || (user.role !== 'school_admin' && user.role !== 'super_admin')) { window.location.href = 'index.html'; }
 document.getElementById('navUser').textContent = user.name.split(' ')[0];
 
 function updateOnline() {
@@ -175,24 +178,20 @@ window.addEventListener('online', updateOnline);
 window.addEventListener('offline', updateOnline);
 updateOnline();
 
-function switchTab(name) {
+function switchTab(name, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
-  event.target.classList.add('active');
-
+  if (btn) btn.classList.add('active');
   if (name === 'approvals') loadPending();
-  if (name === 'results') loadClasses('classFilter');
-  if (name === 'students') { loadClasses('studentClassFilter'); loadStudents(); }
+  if (name === 'results')   loadClasses('classFilter');
+  if (name === 'students')  { loadClasses('studentClassFilter'); loadStudents(); }
+  if (name === 'teachers')  loadTeachers();
 }
 
-let classes = [];
-
 async function loadDashboard() {
-  const schoolRes = await API.get(`/schools/me`);
-  if (schoolRes.ok) {
-    document.getElementById('schoolName').textContent = schoolRes.data.name;
-  }
+  const schoolRes = await API.get('/schools/me');
+  if (schoolRes.ok) document.getElementById('schoolName').textContent = schoolRes.data.name;
 
   const sessRes = await API.get(`/schools/${user.school_id}/sessions`);
   if (sessRes.ok) {
@@ -208,57 +207,87 @@ async function loadDashboard() {
 
   const stuRes = await API.get('/students/');
   if (stuRes.ok) document.getElementById('statStudents').textContent = stuRes.data.length;
+
+  // Stats
+  const statsRes = await API.get(`/results/stats/${user.school_id}`);
+  if (statsRes.ok) {
+    const pending  = statsRes.data.submitted;
+    const approved = statsRes.data.approved;
+    document.getElementById('statPending').textContent  = pending;
+    document.getElementById('statApproved').textContent = approved;
+    // Show notification dot on approvals tab if pending > 0
+    document.getElementById('pendingDot').style.display = pending > 0 ? 'inline-block' : 'none';
+  }
 }
 
 async function loadPending() {
   const el = document.getElementById('pendingList');
-  const subjRes = await API.get(`/schools/${user.school_id}/subjects`);
-  if (!subjRes.ok) {
-    el.innerHTML = `<div class="empty-state"><div class="emoji">⚠️</div><h3>Could not load subjects</h3></div>`;
-    return;
-  }
+  el.innerHTML = `<div class="empty-state"><div class="emoji">⏳</div><h3>Loading…</h3></div>`;
 
+  const subjRes = await API.get(`/schools/${user.school_id}/subjects`);
+  if (!subjRes.ok) { el.innerHTML = `<div class="empty-state"><div class="emoji">⚠️</div><h3>Could not load subjects</h3></div>`; return; }
+
+  // Check each subject for submitted results
   const subjects = subjRes.data;
-  if (!subjects.length) {
-    el.innerHTML = `<div class="empty-state"><div class="emoji">✅</div><h3>Nothing to approve</h3><p>No subjects have submitted results yet.</p></div>`;
+  let pendingSubjects = [];
+
+  const statsRes = await API.get(`/results/stats/${user.school_id}`);
+  const hasPending = statsRes.ok && statsRes.data.submitted > 0;
+
+  if (!hasPending) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">✅</div><h3>Nothing to approve</h3><p>No results have been submitted yet.</p></div>`;
     return;
   }
 
   el.innerHTML = subjects.map(s => `
     <div class="subject-card">
-      <div>
+      <div style="margin-bottom:10px;">
         <div style="font-size:15px; font-weight:700;">${s.name}</div>
         <div style="font-size:12px; color:var(--muted);">Class ${s.class_id}</div>
       </div>
-      <button class="btn btn-sm btn-primary" onclick="approveSubject(${s.id}, this)">
-        Approve
-      </button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm btn-primary" style="flex:1;" onclick="approveSubject(${s.id}, this)">✅ Approve</button>
+        <button class="btn btn-sm btn-danger"  style="flex:1;" onclick="rejectSubject(${s.id}, this)">❌ Reject</button>
+      </div>
     </div>
   `).join('');
 }
 
 async function approveSubject(subjectId, btn) {
-  btn.disabled = true;
-  btn.textContent = '…';
+  btn.disabled = true; btn.textContent = '…';
   const res = await API.post(`/results/approve/${subjectId}`, {});
   if (res.ok) {
     showToast('✅ Results approved!');
     btn.closest('.subject-card').style.opacity = '0.5';
     btn.textContent = 'Approved';
+    loadDashboard();
   } else {
-    btn.disabled = false;
-    btn.textContent = 'Approve';
-    showToast(res.error || 'Failed to approve', 'error');
+    showToast(res.error || 'Failed', 'error');
+    btn.disabled = false; btn.textContent = '✅ Approve';
+  }
+}
+
+async function rejectSubject(subjectId, btn) {
+  if (!confirm('Reject these results? The teacher will need to correct and resubmit.')) return;
+  btn.disabled = true; btn.textContent = '…';
+  const res = await API.post(`/results/reject/${subjectId}`, {});
+  if (res.ok) {
+    showToast('Results rejected — teacher notified.');
+    btn.closest('.subject-card').style.background = '#FDF0EE';
+    btn.textContent = 'Rejected';
+    loadDashboard();
+  } else {
+    showToast(res.error || 'Failed', 'error');
+    btn.disabled = false; btn.textContent = '❌ Reject';
   }
 }
 
 async function loadClasses(selectId) {
   const res = await API.get(`/schools/${user.school_id}/classes`);
   if (!res.ok) return;
-  classes = res.data;
   const sel = document.getElementById(selectId);
   sel.innerHTML = '<option value="">All Classes</option>' +
-    classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    res.data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 }
 
 async function loadResults() {
@@ -273,16 +302,25 @@ async function loadResults() {
     return;
   }
 
+  // Load class positions
+  const posRes = await API.get(`/results/class-positions/${classId}`);
+  const positions = posRes.ok ? posRes.data : [];
+  const posMap = {};
+  positions.forEach(p => { posMap[p.student_id] = p; });
+
   el.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` +
-    stuRes.data.map(s => `
+    stuRes.data.map(s => {
+      const pos = posMap[s.id];
+      return `
       <div class="card-sm" style="display:flex; align-items:center; justify-content:space-between;">
         <div>
           <div style="font-size:14px; font-weight:700;">${s.full_name}</div>
           <div style="font-size:11px; color:var(--muted); font-family:monospace;">${s.id}</div>
+          ${pos ? `<div style="font-size:12px; color:var(--green); font-weight:700; margin-top:2px;">Avg: ${pos.average}% · Position: ${pos.position}${ordinal(pos.position)}</div>` : ''}
         </div>
         <a href="result-card.html?student=${s.id}" class="btn btn-sm btn-secondary">View Card</a>
-      </div>
-    `).join('') + `</div>`;
+      </div>`;
+    }).join('') + `</div>`;
 }
 
 async function loadStudents() {
@@ -294,15 +332,75 @@ async function loadStudents() {
     el.innerHTML = `<div class="empty-state"><div class="emoji">👥</div><h3>No students found</h3></div>`;
     return;
   }
-
   el.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` +
     res.data.map(s => `
       <div class="card-sm">
         <div style="font-size:14px; font-weight:700;">${s.full_name}</div>
         <div style="font-size:11px; color:var(--muted); font-family:monospace; margin-top:2px;">${s.id}</div>
-        <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.gender === 'M' ? '👦' : '👧'} · Status: ${s.status}</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:2px;">${s.gender === 'M' ? '👦' : '👧'} · ${s.status}</div>
       </div>
     `).join('') + `</div>`;
+}
+
+function toggleTeacherForm() {
+  const form = document.getElementById('teacherForm');
+  form.classList.toggle('show');
+}
+
+async function createTeacher() {
+  const errBanner = document.getElementById('tErrBanner');
+  const okBanner  = document.getElementById('tOkBanner');
+  errBanner.classList.remove('show');
+  okBanner.style.display = 'none';
+
+  const name     = document.getElementById('tName').value.trim();
+  const email    = document.getElementById('tEmail').value.trim();
+  const phone    = document.getElementById('tPhone').value.trim();
+  const staffId  = document.getElementById('tStaffId').value.trim();
+  const password = document.getElementById('tPassword').value;
+
+  if (!name)  { document.getElementById('tErrText').textContent = 'Enter teacher full name.'; errBanner.classList.add('show'); return; }
+  if (!email) { document.getElementById('tErrText').textContent = 'Enter teacher email.'; errBanner.classList.add('show'); return; }
+  if (!password || password.length < 6) { document.getElementById('tErrText').textContent = 'Password must be at least 6 characters.'; errBanner.classList.add('show'); return; }
+
+  const res = await API.post('/teachers/', { full_name: name, email, phone, staff_id: staffId, password });
+
+  if (res.ok) {
+    document.getElementById('tOkText').textContent = `✅ ${name} account created successfully.`;
+    okBanner.style.display = 'flex';
+    ['tName','tEmail','tPhone','tStaffId','tPassword'].forEach(id => document.getElementById(id).value = '');
+    showToast(`Teacher account created for ${name}`);
+    loadTeachers();
+  } else {
+    document.getElementById('tErrText').textContent = res.error || 'Failed to create teacher account.';
+    errBanner.classList.add('show');
+  }
+}
+
+async function loadTeachers() {
+  const el = document.getElementById('teachersList');
+  const res = await API.get('/teachers/');
+  if (!res.ok || !res.data.length) {
+    el.innerHTML = `<div class="empty-state"><div class="emoji">👨‍🏫</div><h3>No teachers yet</h3><p>Add a teacher using the form above.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` +
+    res.data.map(t => `
+      <div class="card-sm" style="display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:14px; font-weight:700;">${t.full_name}</div>
+          <div style="font-size:12px; color:var(--muted);">${t.email}</div>
+          ${t.staff_id ? `<div style="font-size:11px; color:var(--muted);">Staff ID: ${t.staff_id}</div>` : ''}
+        </div>
+        <span class="pill ${t.is_active ? 'pill-approved' : 'pill-draft'}">${t.is_active ? 'Active' : 'Inactive'}</span>
+      </div>
+    `).join('') + `</div>`;
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return s[(v-20)%10] || s[v] || s[0];
 }
 
 function logout() { Auth.clear(); window.location.href = 'index.html'; }

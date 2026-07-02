@@ -13,9 +13,9 @@
 <nav class="top-nav">
   <div class="nav-logo">Edu<span>Sync</span></div>
   <div class="nav-right">
-    <div class="sync-dot" id="syncDot" title="Online"></div>
+    <div class="sync-dot" id="syncDot"></div>
     <div class="nav-user" id="navUser">Teacher</div>
-    <button class="nav-logout" onclick="logout()" title="Sign out">⎋</button>
+    <button class="nav-logout" onclick="logout()">⎋</button>
   </div>
 </nav>
 
@@ -26,27 +26,13 @@
 
 <div class="page-content">
 
-  <!-- STATS -->
   <div class="stat-row" style="margin:0 0 16px;">
-    <div class="stat-chip">
-      <div class="val" id="statSubjects">—</div>
-      <div class="lbl">Subjects</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="statStudents">—</div>
-      <div class="lbl">Students</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="statDraft">—</div>
-      <div class="lbl">Draft</div>
-    </div>
-    <div class="stat-chip">
-      <div class="val" id="statSubmitted">—</div>
-      <div class="lbl">Submitted</div>
-    </div>
+    <div class="stat-chip"><div class="val" id="statSubjects">—</div><div class="lbl">Subjects</div></div>
+    <div class="stat-chip"><div class="val" id="statStudents">—</div><div class="lbl">Students</div></div>
+    <div class="stat-chip"><div class="val" id="statDraft">—</div><div class="lbl">Draft</div></div>
+    <div class="stat-chip"><div class="val" id="statSubmitted">—</div><div class="lbl">Submitted</div></div>
   </div>
 
-  <!-- SESSION INFO -->
   <div class="card" style="margin-bottom:16px;">
     <div class="section-label">Current Session</div>
     <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -58,52 +44,39 @@
     </div>
   </div>
 
-  <!-- SUBJECTS LIST -->
   <div class="section-label">My Subjects</div>
   <div id="subjectsList">
-    <div class="empty-state">
-      <div class="emoji">⏳</div>
-      <h3>Loading subjects…</h3>
-    </div>
+    <div class="empty-state"><div class="emoji">⏳</div><h3>Loading subjects…</h3></div>
   </div>
 
 </div>
 
 <script src="assets/api.js"></script>
 <script>
-// ── Auth Guard ──────────────────────────────────────
 const user = Auth.user();
 if (!user || user.role !== 'teacher') { window.location.href = 'index.html'; }
 
-// ── Sync Status ─────────────────────────────────────
 function updateOnlineStatus() {
-  const dot = document.getElementById('syncDot');
-  const ribbon = document.getElementById('offlineRibbon');
-  if (navigator.onLine) {
-    dot.classList.remove('offline');
-    ribbon.style.display = 'none';
-    OfflineQueue.flush();
-  } else {
-    dot.classList.add('offline');
-    ribbon.style.display = 'block';
-  }
+  const online = navigator.onLine;
+  document.getElementById('syncDot').classList.toggle('offline', !online);
+  document.getElementById('offlineRibbon').style.display = online ? 'none' : 'block';
+  if (online) OfflineQueue.flush();
 }
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 updateOnlineStatus();
 
-// ── Greeting ────────────────────────────────────────
 document.getElementById('navUser').textContent = user.name.split(' ')[0];
 const hour = new Date().getHours();
 const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 document.getElementById('greetingName').textContent = `${greet}, ${user.name.split(' ')[0]} 👋`;
 
-// ── Load Data ───────────────────────────────────────
 let subjects = [];
 let sessionData = null;
+let classId = null;
 
 async function loadDashboard() {
-  // Load session
+  // Session
   const sessRes = await API.get(`/schools/${user.school_id}/sessions`);
   if (sessRes.ok) {
     const active = sessRes.data.find(s => s.is_active);
@@ -117,26 +90,36 @@ async function loadDashboard() {
     }
   }
 
-  // Load subjects for this teacher's class
+  // Subjects
   const subjRes = await API.get(`/schools/${user.school_id}/subjects`);
   if (subjRes.ok) {
-    // Filter subjects assigned to this teacher
-    // We'll load teacher_id from /auth/me
-    const meRes = await API.get('/auth/me');
     subjects = subjRes.data;
-    renderSubjects(subjects);
     document.getElementById('statSubjects').textContent = subjects.length;
+
+    // Get class_id from first subject
+    if (subjects.length) classId = subjects[0].class_id;
+
+    renderSubjects(subjects);
+  }
+
+  // Students count
+  if (classId) {
+    const stuRes = await API.get(`/students/?class_id=${classId}`);
+    if (stuRes.ok) document.getElementById('statStudents').textContent = stuRes.data.length;
+  }
+
+  // Stats
+  const statsRes = await API.get(`/results/stats/${user.school_id}`);
+  if (statsRes.ok) {
+    document.getElementById('statDraft').textContent = statsRes.data.draft;
+    document.getElementById('statSubmitted').textContent = statsRes.data.submitted;
   }
 }
 
 function renderSubjects(list) {
   const el = document.getElementById('subjectsList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty-state">
-      <div class="emoji">📋</div>
-      <h3>No subjects assigned</h3>
-      <p>Ask your principal to assign subjects to your account.</p>
-    </div>`;
+    el.innerHTML = `<div class="empty-state"><div class="emoji">📋</div><h3>No subjects assigned</h3><p>Ask your principal to assign subjects to your account.</p></div>`;
     return;
   }
 
@@ -157,10 +140,7 @@ function openSubject(subjectId, subjectName, classId) {
   window.location.href = 'scores.html';
 }
 
-function logout() {
-  Auth.clear();
-  window.location.href = 'index.html';
-}
+function logout() { Auth.clear(); window.location.href = 'index.html'; }
 
 loadDashboard();
 </script>
