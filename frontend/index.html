@@ -1,562 +1,366 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduSync — Sign In</title>
-    <style>
-      *,
-      *::before,
-      *::after {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSync — Sign In</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-      :root {
-        --green: #1b7b4b;
-        --green2: #145c38;
-        --gold: #d4a017;
-        --dark: #0f1f16;
-        --surface: #f5f7f5;
-        --white: #ffffff;
-        --muted: #6b7c70;
-        --border: #d6e4da;
-        --error: #c0392b;
-      }
+  :root {
+    --green:#1B7B4B; --green2:#145c38; --gold:#D4A017;
+    --dark:#0F1F16; --surface:#F5F7F5; --white:#FFFFFF;
+    --muted:#6B7C70; --border:#D6E4DA; --error:#C0392B;
+  }
 
-      body {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        background: var(--dark);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-      /* HERO */
-      .hero {
-        padding: 52px 24px 40px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        flex-shrink: 0;
-      }
+  /* HERO */
+  .hero {
+    padding: 52px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
 
-      .hero::before {
-        content: '';
-        position: absolute;
-        top: -60px;
-        right: -60px;
-        width: 220px;
-        height: 220px;
-        border-radius: 50%;
-        background: rgba(27, 123, 75, 0.12);
-      }
-      .hero::after {
-        content: '';
-        position: absolute;
-        bottom: -40px;
-        left: -40px;
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        background: rgba(212, 160, 23, 0.08);
-      }
+  .hero::before {
+    content:''; position:absolute; top:-60px; right:-60px;
+    width:220px; height:220px; border-radius:50%;
+    background:rgba(27,123,75,0.12);
+  }
+  .hero::after {
+    content:''; position:absolute; bottom:-40px; left:-40px;
+    width:160px; height:160px; border-radius:50%;
+    background:rgba(212,160,23,0.08);
+  }
 
-      .logo-wrap {
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 1;
-      }
+  .logo-wrap {
+    display:inline-flex; align-items:center; gap:12px;
+    margin-bottom:20px; position:relative; z-index:1;
+  }
 
-      .logo-icon {
-        width: 52px;
-        height: 52px;
-        background: var(--green);
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        box-shadow: 0 4px 16px rgba(27, 123, 75, 0.4);
-      }
+  .logo-icon {
+    width:52px; height:52px; background:var(--green);
+    border-radius:14px; display:flex; align-items:center;
+    justify-content:center; font-size:26px;
+    box-shadow: 0 4px 16px rgba(27,123,75,0.4);
+  }
 
-      .logo-text {
-        font-size: 30px;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: -0.5px;
-      }
-      .logo-text span {
-        color: var(--gold);
-      }
+  .logo-text { font-size:30px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
+  .logo-text span { color:var(--gold); }
 
-      .tagline {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.45);
-        letter-spacing: 1.2px;
-        text-transform: uppercase;
-        position: relative;
-        z-index: 1;
-      }
+  .tagline {
+    font-size:12px; color:rgba(255,255,255,0.45);
+    letter-spacing:1.2px; text-transform:uppercase;
+    position:relative; z-index:1;
+  }
 
-      /* CARD */
-      .card {
-        background: var(--white);
-        border-radius: 24px 24px 0 0;
-        padding: 28px 20px 40px;
-        flex: 1;
-        box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.2);
-      }
+  /* CARD */
+  .card {
+    background:var(--white);
+    border-radius:24px 24px 0 0;
+    padding:28px 20px 40px;
+    flex:1;
+    box-shadow: 0 -4px 32px rgba(0,0,0,0.2);
+  }
 
-      .card-title {
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--dark);
-        margin-bottom: 4px;
-      }
-      .card-sub {
-        font-size: 13px;
-        color: var(--muted);
-        margin-bottom: 24px;
-      }
+  .card-title { font-size:20px; font-weight:800; color:var(--dark); margin-bottom:4px; }
+  .card-sub   { font-size:13px; color:var(--muted); margin-bottom:24px; }
 
-      /* ROLE TABS */
-      .role-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 10px;
-      }
+  /* ROLE TABS */
+  .role-label {
+    font-size:11px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.8px; margin-bottom:10px;
+  }
 
-      .role-tabs {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
-        margin-bottom: 24px;
-      }
+  .role-tabs { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:24px; }
 
-      .role-tab {
-        padding: 12px 6px;
-        border: 2px solid var(--border);
-        border-radius: 12px;
-        background: var(--surface);
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.2s;
-        -webkit-tap-highlight-color: transparent;
-      }
+  .role-tab {
+    padding:12px 6px; border:2px solid var(--border);
+    border-radius:12px; background:var(--surface);
+    cursor:pointer; text-align:center;
+    transition:all 0.2s; -webkit-tap-highlight-color:transparent;
+  }
 
-      .role-tab .tab-icon {
-        font-size: 22px;
-        display: block;
-        margin-bottom: 4px;
-      }
-      .role-tab .tab-name {
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--muted);
-      }
+  .role-tab .tab-icon { font-size:22px; display:block; margin-bottom:4px; }
+  .role-tab .tab-name { font-size:11px; font-weight:700; color:var(--muted); }
 
-      .role-tab.active {
-        border-color: var(--green);
-        background: rgba(27, 123, 75, 0.06);
-      }
-      .role-tab.active .tab-name {
-        color: var(--green);
-      }
+  .role-tab.active { border-color:var(--green); background:rgba(27,123,75,0.06); }
+  .role-tab.active .tab-name { color:var(--green); }
 
-      /* FIELDS */
-      .field {
-        margin-bottom: 16px;
-      }
+  /* FIELDS */
+  .field { margin-bottom:16px; }
 
-      label {
-        display: block;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-      }
+  label {
+    display:block; font-size:11px; font-weight:700;
+    color:var(--dark); margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:0.3px;
+  }
 
-      .input-wrap {
-        position: relative;
-      }
-      .input-wrap .icon {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 15px;
-        pointer-events: none;
-      }
+  .input-wrap { position:relative; }
+  .input-wrap .icon {
+    position:absolute; left:12px; top:50%;
+    transform:translateY(-50%); font-size:15px; pointer-events:none;
+  }
 
-      input[type='email'],
-      input[type='password'] {
-        width: 100%;
-        padding: 13px 13px 13px 40px;
-        border: 1.5px solid var(--border);
-        border-radius: 10px;
-        font-size: 15px;
-        color: var(--dark);
-        background: var(--surface);
-        outline: none;
-        transition:
-          border-color 0.2s,
-          background 0.2s;
-        -webkit-appearance: none;
-      }
+  input[type="email"],
+  input[type="password"] {
+    width:100%; padding:13px 13px 13px 40px;
+    border:1.5px solid var(--border); border-radius:10px;
+    font-size:15px; color:var(--dark); background:var(--surface);
+    outline:none; transition:border-color 0.2s, background 0.2s;
+    -webkit-appearance:none;
+  }
 
-      input:focus {
-        border-color: var(--green);
-        background: var(--white);
-      }
-      input.err {
-        border-color: var(--error);
-      }
+  input:focus { border-color:var(--green); background:var(--white); }
+  input.err   { border-color:var(--error); }
 
-      .show-pass {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 18px;
-        color: var(--muted);
-        padding: 4px;
-        -webkit-tap-highlight-color: transparent;
-      }
+  .show-pass {
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:18px;
+    color:var(--muted); padding:4px; -webkit-tap-highlight-color:transparent;
+  }
 
-      /* BANNER */
-      .banner {
-        display: none;
-        align-items: center;
-        gap: 8px;
-        padding: 11px 13px;
-        border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 14px;
-      }
-      .banner.show {
-        display: flex;
-      }
-      .banner-error {
-        background: #fdf0ee;
-        border: 1px solid #f5c6c0;
-        color: var(--error);
-      }
+  /* BANNER */
+  .banner {
+    display:none; align-items:center; gap:8px;
+    padding:11px 13px; border-radius:8px;
+    font-size:13px; margin-bottom:14px;
+  }
+  .banner.show { display:flex; }
+  .banner-error { background:#FDF0EE; border:1px solid #F5C6C0; color:var(--error); }
 
-      /* BUTTON */
-      .btn-login {
-        width: 100%;
-        padding: 15px;
-        background: var(--green);
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition:
-          background 0.2s,
-          transform 0.1s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .btn-login:active {
-        transform: scale(0.98);
-        background: var(--green2);
-      }
-      .btn-login:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+  /* BUTTON */
+  .btn-login {
+    width:100%; padding:15px; background:var(--green); color:#fff;
+    border:none; border-radius:12px; font-size:16px; font-weight:700;
+    cursor:pointer; transition:background 0.2s, transform 0.1s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn-login:active { transform:scale(0.98); background:var(--green2); }
+  .btn-login:disabled { opacity:0.6; cursor:not-allowed; }
 
-      .spinner {
-        display: none;
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+  .spinner {
+    display:none; width:18px; height:18px;
+    border:2px solid rgba(255,255,255,0.4); border-top-color:#fff;
+    border-radius:50%; animation:spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
-      /* OFFLINE PILL */
-      .offline-pill {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(27, 123, 75, 0.08);
-        border-radius: 10px;
-        padding: 10px 14px;
-        margin-top: 20px;
-        font-size: 12px;
-        color: var(--green);
-        font-weight: 600;
-      }
+  /* OFFLINE PILL */
+  .offline-pill {
+    display:flex; align-items:center; gap:8px;
+    background:rgba(27,123,75,0.08); border-radius:10px;
+    padding:10px 14px; margin-top:20px;
+    font-size:12px; color:var(--green); font-weight:600;
+  }
 
-      .footer {
-        text-align: center;
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.3);
-        padding: 16px;
-        background: var(--dark);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="hero">
-      <div class="logo-wrap">
-        <div class="logo-icon">📚</div>
-        <div class="logo-text">Edu<span>Sync</span></div>
-      </div>
-      <div class="tagline">School Result Management Portal</div>
+  .footer {
+    text-align:center; font-size:11px; color:rgba(255,255,255,0.3);
+    padding:16px; background:var(--dark);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo-wrap">
+    <div class="logo-icon">📚</div>
+    <div class="logo-text">Edu<span>Sync</span></div>
+  </div>
+  <div class="tagline">School Result Management Portal</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Welcome back</div>
+  <div class="card-sub">Sign in to your account to continue</div>
+
+  <div class="role-label">I am a</div>
+  <div class="role-tabs">
+    <div class="role-tab" data-role="teacher" onclick="selectRole(this)">
+      <span class="tab-icon">👨‍🏫</span>
+      <span class="tab-name">Teacher</span>
     </div>
-
-    <div class="card">
-      <div class="card-title">Welcome back</div>
-      <div class="card-sub">Sign in to your account to continue</div>
-
-      <div class="role-label">I am a</div>
-      <div class="role-tabs">
-        <div class="role-tab" data-role="teacher" onclick="selectRole(this)">
-          <span class="tab-icon">👨‍🏫</span>
-          <span class="tab-name">Teacher</span>
-        </div>
-        <div
-          class="role-tab active"
-          data-role="school_admin"
-          onclick="selectRole(this)">
-          <span class="tab-icon">🏫</span>
-          <span class="tab-name">Principal</span>
-        </div>
-        <div
-          class="role-tab"
-          data-role="super_admin"
-          onclick="selectRole(this)">
-          <span class="tab-icon">⚙️</span>
-          <span class="tab-name">Admin</span>
-        </div>
-      </div>
-
-      <div class="banner banner-error" id="errBanner">
-        <span>⚠️</span
-        ><span id="errText">Invalid credentials. Please try again.</span>
-      </div>
-
-      <div class="field">
-        <label for="email">Email Address</label>
-        <div class="input-wrap">
-          <span class="icon">✉️</span>
-          <input
-            type="email"
-            id="email"
-            placeholder="you@school.ng"
-            autocomplete="email" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <div class="input-wrap">
-          <span class="icon">🔒</span>
-          <input
-            type="password"
-            id="password"
-            placeholder="Enter your password"
-            autocomplete="current-password" />
-          <button
-            class="show-pass"
-            onclick="togglePass()"
-            type="button"
-            id="showBtn">
-            👁️
-          </button>
-        </div>
-      </div>
-
-      <button class="btn-login" id="loginBtn" onclick="handleLogin()">
-        <span id="btnText">Sign In</span>
-        <div class="spinner" id="spinner"></div>
-      </button>
-
-      <div class="offline-pill">
-        <span>📶</span>
-        <span
-          >EduSync works fully offline — your data is always safe on this
-          device.</span
-        >
-      </div>
+    <div class="role-tab active" data-role="school_admin" onclick="selectRole(this)">
+      <span class="tab-icon">🏫</span>
+      <span class="tab-name">Principal</span>
     </div>
+    <div class="role-tab" data-role="super_admin" onclick="selectRole(this)">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-name">Admin</span>
+    </div>
+  </div>
 
-    <div class="footer">EduSync · Built for Niger State Schools</div>
+  <div class="banner banner-error" id="errBanner">
+    <span>⚠️</span><span id="errText">Invalid credentials. Please try again.</span>
+  </div>
 
-    <script>
-      const API_BASE = 'https://edusync-portal-48db.onrender.com';
-      let selectedRole = 'school_admin';
+  <div class="field">
+    <label for="email">Email Address</label>
+    <div class="input-wrap">
+      <span class="icon">✉️</span>
+      <input type="email" id="email" placeholder="you@school.ng" autocomplete="email">
+    </div>
+  </div>
 
-      function selectRole(el) {
-        document
-          .querySelectorAll('.role-tab')
-          .forEach((t) => t.classList.remove('active'));
-        el.classList.add('active');
-        selectedRole = el.dataset.role;
-        clearErr();
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="input-wrap">
+      <span class="icon">🔒</span>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" style="padding-left:40px; padding-right:48px;">
+      <button class="show-pass" onclick="togglePass()" type="button" id="showBtn" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);">👁️</button>
+    </div>
+  </div>
+
+  <div style="text-align:right; margin-top:-8px; margin-bottom:16px;">
+    <a href="forgot-password.html" style="font-size:12px; color:var(--green); font-weight:600; text-decoration:none;">Forgot password?</a>
+  </div>
+
+  <button class="btn-login" id="loginBtn" onclick="handleLogin()">
+    <span id="btnText">Sign In</span>
+    <div class="spinner" id="spinner"></div>
+  </button>
+
+  <div class="offline-pill">
+    <span>📶</span>
+    <span>EduSync works fully offline — your data is always safe on this device.</span>
+  </div>
+</div>
+
+<div class="footer">EduSync · Built for Niger State Schools</div>
+
+<script>
+const API_BASE = 'http://localhost:8000';
+let selectedRole = 'school_admin';
+
+function selectRole(el) {
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  selectedRole = el.dataset.role;
+  clearErr();
+}
+
+function togglePass() {
+  const inp = document.getElementById('password');
+  const btn = document.getElementById('showBtn');
+  const visible = inp.type === 'text';
+  inp.type = visible ? 'password' : 'text';
+  btn.textContent = visible ? '👁️' : '🙈';
+}
+
+function clearErr() {
+  document.getElementById('errBanner').classList.remove('show');
+  document.getElementById('email').classList.remove('err');
+  document.getElementById('password').classList.remove('err');
+}
+
+function showErr(msg) {
+  document.getElementById('errText').textContent = msg;
+  document.getElementById('errBanner').classList.add('show');
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('loginBtn');
+  const txt = document.getElementById('btnText');
+  const sp  = document.getElementById('spinner');
+  btn.disabled = on;
+  txt.textContent = on ? 'Signing in…' : 'Sign In';
+  sp.style.display = on ? 'block' : 'none';
+}
+
+async function handleLogin() {
+  clearErr();
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email) { showErr('Enter your email address.'); document.getElementById('email').classList.add('err'); return; }
+  if (!email.includes('@')) { showErr('Enter a valid email address.'); document.getElementById('email').classList.add('err'); return; }
+  if (!password) { showErr('Enter your password.'); document.getElementById('password').classList.add('err'); return; }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showErr(data.detail || 'Incorrect email or password.');
+      document.getElementById('email').classList.add('err');
+      document.getElementById('password').classList.add('err');
+      setLoading(false);
+      return;
+    }
+
+    // Validate role matches selected tab
+    if (data.role !== selectedRole) {
+      showErr(`This account is not a ${selectedRole.replace('_', ' ')}. Please select the correct role.`);
+      setLoading(false);
+      return;
+    }
+
+    // Save token + user
+    localStorage.setItem('es_token', data.token);
+    localStorage.setItem('es_user', JSON.stringify({
+      id: data.user_id,
+      name: data.full_name,
+      role: data.role,
+      school_id: data.school_id
+    }));
+
+    // Route by role
+    if (data.role === 'super_admin') {
+      window.location.href = 'admin.html';
+    } else if (data.role === 'school_admin') {
+      window.location.href = 'principal.html';
+    } else {
+      window.location.href = 'teacher.html';
+    }
+
+  } catch (e) {
+    // Offline fallback — check cached token
+    const cached = localStorage.getItem('es_token');
+    const cachedUser = localStorage.getItem('es_user');
+    if (cached && cachedUser) {
+      const u = JSON.parse(cachedUser);
+      if (u.role === selectedRole) {
+        showErr('');
+        if (u.role === 'super_admin') window.location.href = 'admin.html';
+        else if (u.role === 'school_admin') window.location.href = 'principal.html';
+        else window.location.href = 'teacher.html';
+        return;
       }
+    }
+    showErr('Cannot connect to server. Check your internet or try again.');
+  }
 
-      function togglePass() {
-        const inp = document.getElementById('password');
-        const btn = document.getElementById('showBtn');
-        const visible = inp.type === 'text';
-        inp.type = visible ? 'password' : 'text';
-        btn.textContent = visible ? '👁️' : '🙈';
-      }
+  setLoading(false);
+}
 
-      function clearErr() {
-        document.getElementById('errBanner').classList.remove('show');
-        document.getElementById('email').classList.remove('err');
-        document.getElementById('password').classList.remove('err');
-      }
+document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
 
-      function showErr(msg) {
-        document.getElementById('errText').textContent = msg;
-        document.getElementById('errBanner').classList.add('show');
-      }
-
-      function setLoading(on) {
-        const btn = document.getElementById('loginBtn');
-        const txt = document.getElementById('btnText');
-        const sp = document.getElementById('spinner');
-        btn.disabled = on;
-        txt.textContent = on ? 'Signing in…' : 'Sign In';
-        sp.style.display = on ? 'block' : 'none';
-      }
-
-      async function handleLogin() {
-        clearErr();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-
-        if (!email) {
-          showErr('Enter your email address.');
-          document.getElementById('email').classList.add('err');
-          return;
-        }
-        if (!email.includes('@')) {
-          showErr('Enter a valid email address.');
-          document.getElementById('email').classList.add('err');
-          return;
-        }
-        if (!password) {
-          showErr('Enter your password.');
-          document.getElementById('password').classList.add('err');
-          return;
-        }
-
-        setLoading(true);
-
-        try {
-          const res = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-          });
-
-          const data = await res.json();
-
-          if (!res.ok) {
-            showErr(data.detail || 'Incorrect email or password.');
-            document.getElementById('email').classList.add('err');
-            document.getElementById('password').classList.add('err');
-            setLoading(false);
-            return;
-          }
-
-          // Validate role matches selected tab
-          if (data.role !== selectedRole) {
-            showErr(
-              `This account is not a ${selectedRole.replace('_', ' ')}. Please select the correct role.`,
-            );
-            setLoading(false);
-            return;
-          }
-
-          // Save token + user
-          localStorage.setItem('es_token', data.token);
-          localStorage.setItem(
-            'es_user',
-            JSON.stringify({
-              id: data.user_id,
-              name: data.full_name,
-              role: data.role,
-              school_id: data.school_id,
-            }),
-          );
-
-          // Route by role
-          if (data.role === 'super_admin') {
-            window.location.href = 'admin.html';
-          } else if (data.role === 'school_admin') {
-            window.location.href = 'principal.html';
-          } else {
-            window.location.href = 'teacher.html';
-          }
-        } catch (e) {
-          // Offline fallback — check cached token
-          const cached = localStorage.getItem('es_token');
-          const cachedUser = localStorage.getItem('es_user');
-          if (cached && cachedUser) {
-            const u = JSON.parse(cachedUser);
-            if (u.role === selectedRole) {
-              showErr('');
-              if (u.role === 'super_admin') window.location.href = 'admin.html';
-              else if (u.role === 'school_admin')
-                window.location.href = 'principal.html';
-              else window.location.href = 'teacher.html';
-              return;
-            }
-          }
-          showErr(
-            'Cannot connect to server. Check your internet or try again.',
-          );
-        }
-
-        setLoading(false);
-      }
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') handleLogin();
-      });
-
-      // If already logged in, redirect
-      const existingUser = localStorage.getItem('es_user');
-      if (existingUser) {
-        try {
-          const u = JSON.parse(existingUser);
-          if (u.role === 'super_admin') window.location.href = 'admin.html';
-          else if (u.role === 'school_admin')
-            window.location.href = 'principal.html';
-          else window.location.href = 'teacher.html';
-        } catch (e) {}
-      }
-    </script>
-  </body>
+// If already logged in, redirect
+const existingUser = localStorage.getItem('es_user');
+if (existingUser) {
+  try {
+    const u = JSON.parse(existingUser);
+    if (u.role === 'super_admin') window.location.href = 'admin.html';
+    else if (u.role === 'school_admin') window.location.href = 'principal.html';
+    else window.location.href = 'teacher.html';
+  } catch(e) {}
+}
+</script>
+</body>
 </html>
