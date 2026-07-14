@@ -3,7 +3,8 @@
    api.js · auth · storage · offline queue
 ═══════════════════════════════════════════════════════ */
 
-const API_BASE = window.EDUSYNC_API || 'https://edusync-portal-48db.onrender.com';
+const API_BASE =
+  window.EDUSYNC_API || 'https://edusync-portal-48db.onrender.com';
 
 /* ── Token Storage ─────────────────────────────────── */
 const Auth = {
